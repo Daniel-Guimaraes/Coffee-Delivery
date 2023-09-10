@@ -1,91 +1,72 @@
-import { Minus, Plus, ShoppingCart } from 'phosphor-react'
+import { useState } from 'react'
+
+import { ShoppingCart } from 'phosphor-react'
 import { BuySection, CoffeeContainer } from './styles'
 import { CartButton } from '../CartButton'
 import { v4 as uuidv4 } from 'uuid'
-import { useContext, useState } from 'react'
-import { ProductContext } from '../../contexts/contextProducts'
-import { toast } from 'react-toastify'
+import { InputQuantity } from '../Form/InputQuantity'
+import { Product } from '../../reducers/Products/reducer'
 
 interface CoffeeProps {
-  id: string
-  tags: string[]
-  name: string
-  description: string
-  price: number
-  img: string
+  product: {
+    id: string
+    tags: string[]
+    name: string
+    description: string
+    price: number
+    img: string
+  }
+  onAddToCart: (product: Product) => void
 }
 
-export function CoffeeForSale({
-  id,
-  img,
-  tags,
-  name,
-  description,
-  price,
-}: CoffeeProps) {
-  const { addNewProduct } = useContext(ProductContext)
-  const [amountProduct, setAmountProduct] = useState<number>(0)
+export function CoffeeForSale({ product, onAddToCart }: CoffeeProps) {
+  const [quantity, setQuantity] = useState(0)
 
-  function handleAmountAdd() {
-    setAmountProduct((state) => state + 1)
+  function handleAdd() {
+    setQuantity((prevState) => prevState + 1)
   }
 
-  function handleAmountSub() {
-    if (amountProduct > 0) {
-      setAmountProduct((state) => state - 1)
-    } else {
-      setAmountProduct(0)
-    }
-  }
-
-  function handleAddToCart() {
-    if (amountProduct > 0) {
-      const basePrice = price
-      const newPrice = amountProduct * price
-
-      addNewProduct(id, img, name, newPrice, amountProduct, basePrice)
-      setAmountProduct(0)
-    } else {
-      return toast.warning('Selecione a quantidade para prosseguir')
-    }
+  function handleSub() {
+    setQuantity((prevState) => (prevState > 0 ? prevState - 1 : 0))
   }
 
   return (
     <CoffeeContainer>
-      <img src={img} alt="" />
+      <img src={product.img} alt="" />
 
       <div className="tags">
-        {tags.map((tag) => (
+        {product.tags.map((tag) => (
           <div className="tag" key={uuidv4()}>
             <span>{tag}</span>
           </div>
         ))}
       </div>
 
-      <h3>{name}</h3>
+      <h3>{product.name}</h3>
 
-      <p>{description}</p>
+      <p>{product.description}</p>
 
       <BuySection>
         <span className="price">
           R$
-          <strong>{price.toFixed(2).replace('.', ',')}</strong>
+          <strong>{product.price.toFixed(2).replace('.', ',')}</strong>
         </span>
 
-        <div className="amount">
-          <button onClick={handleAmountSub}>
-            <Minus />
-          </button>
-          {amountProduct}
-          <button onClick={handleAmountAdd}>
-            <Plus />
-          </button>
-        </div>
+        <InputQuantity onSub={handleSub} onAdd={handleAdd} value={quantity} />
 
         <CartButton
           variant="secondary"
           variantsvg="colorSvgTwo"
-          handleClick={handleAddToCart}
+          handleClick={() => {
+            setQuantity(0)
+            onAddToCart({
+              id: product.id,
+              img: product.img,
+              name: product.name,
+              price: product.price,
+              quantity,
+            })
+          }}
         >
           <ShoppingCart size={22} weight="fill" />
         </CartButton>

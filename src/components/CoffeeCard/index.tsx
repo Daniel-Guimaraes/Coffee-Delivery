@@ -1,50 +1,51 @@
-import { Minus, Plus, Trash } from 'phosphor-react'
+import { Trash } from 'phosphor-react'
 import { CoffeeCardContainer } from './styled'
 import { ProductContext } from '../../contexts/contextProducts'
 import { useContext } from 'react'
+import { InputQuantity } from '../Form/InputQuantity'
+import { formatPrice } from '../../util/functions'
 
 interface CoffeeCardProps {
-  img: string
-  name: string
-  price: number
-  amount: number
+  product: {
+    id: string
+    img: string
+    name: string
+    price: number
+    quantity: number
+  }
 }
 
-export function CoffeeCard({ img, name, price, amount }: CoffeeCardProps) {
+export function CoffeeCard({ product }: CoffeeCardProps) {
   const { removeProduct, handleAmountProductInTheCart } =
     useContext(ProductContext)
 
+  const price = formatPrice(product.price * product.quantity)
+
   function handleRemoveProduct() {
-    removeProduct(name)
+    removeProduct(product.name)
   }
 
-  function handleAmountSumInTheCart() {
-    handleAmountProductInTheCart(amount + 1, name, price)
+  function handleAdd() {
+    handleAmountProductInTheCart(product.id, product.quantity + 1)
   }
 
-  function handleAmountSubtractionInTheCart() {
-    if (amount > 1) {
-      return handleAmountProductInTheCart(amount - 1, name, price)
-    }
+  function handleSub() {
+    handleAmountProductInTheCart(product.id, product.quantity - 1)
   }
 
   return (
     <CoffeeCardContainer>
-      <img src={img} alt="" />
+      <img src={product.img} alt="" />
 
       <div className="informationCoffee">
-        <p>{name}</p>
+        <p>{product.name}</p>
 
         <div>
-          <div className="amount">
-            <button type="button" onClick={handleAmountSubtractionInTheCart}>
-              <Minus />
-            </button>
-            {amount}
-            <button type="button" onClick={handleAmountSumInTheCart}>
-              <Plus />
-            </button>
-          </div>
+          <InputQuantity
+            onSub={handleSub}
+            onAdd={handleAdd}
+            value={product.quantity}
+          />
 
           <button
             type="button"
@@ -57,7 +58,7 @@ export function CoffeeCard({ img, name, price, amount }: CoffeeCardProps) {
         </div>
       </div>
 
-      <p>R${price.toFixed(2).replace('.', ',')}</p>
+      <p>{price}</p>
     </CoffeeCardContainer>
   )
 }

@@ -2,9 +2,8 @@ export interface Product {
   id: string
   img: string
   name: string
-  newPrice: number
-  amountProduct: number
-  basePrice: number
+  price: number
+  quantity: number
 }
 
 interface ProductState {
@@ -16,7 +15,7 @@ type ProductAction =
   | { type: 'REMOVE_PRODUCT_LIST'; payload: { name: string } }
   | {
       type: 'HANDLE_AMOUNT_PRODUCT_IN_THE_CART'
-      payload: { amount: number; name: string; newPrice: number }
+      payload: { quantity: number; id: string }
     }
   | { type: 'CLEAR_PRODUCT_LIST'; payload: { confirmedOrder: boolean } }
 
@@ -40,11 +39,9 @@ export function productsReducer(state: ProductState, action: ProductAction) {
       return {
         ...state,
         productList: state.productList.map((product) => {
-          if (product.name === action.payload.name) {
-            const newBasePrice = action.payload.amount * product.basePrice
-
-            product.newPrice = newBasePrice
-            product.amountProduct = action.payload.amount
+          if (product.id === action.payload.id) {
+            product.quantity =
+              action.payload.quantity === 0 ? 1 : action.payload.quantity
           }
 
           return product
@@ -52,13 +49,9 @@ export function productsReducer(state: ProductState, action: ProductAction) {
       }
 
     case 'CLEAR_PRODUCT_LIST':
-      if (action.payload.confirmedOrder) {
-        return {
-          ...state,
-          productList: [],
-        }
-      } else {
-        return state
+      return {
+        ...state,
+        productList: [],
       }
 
     default:
