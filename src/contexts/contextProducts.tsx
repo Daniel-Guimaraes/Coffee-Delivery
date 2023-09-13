@@ -1,5 +1,7 @@
 import { ReactNode, createContext, useEffect, useReducer } from 'react'
+
 import { toast } from 'react-toastify'
+
 import { Product, productsReducer } from '../reducers/Products/reducer'
 
 interface ProductContextProviderProps {
@@ -9,20 +11,9 @@ interface ProductContextProviderProps {
 interface ProductContextType {
   productList: Product[]
   removeProduct: (name: string) => void
-  clearProductList: (confirmedOrder: boolean) => void
-  addNewProduct: (
-    id: string,
-    img: string,
-    name: string,
-    newPrice: number,
-    amountProduct: number,
-    basePrice: number,
-  ) => void
-  handleAmountProductInTheCart: (
-    amount: number,
-    name: string,
-    newPrice: number,
-  ) => void
+  clearProductList: () => void
+  addNewProduct: (product: Product) => void
+  handleAmountProductInTheCart: (id: string, quantity: number) => void
 }
 
 export const ProductContext = createContext({} as ProductContextType)
@@ -50,31 +41,17 @@ export function ProductContextProvider({
 
   const { productList } = productState
 
-  function addNewProduct(
-    id: string,
-    img: string,
-    name: string,
-    newPrice: number,
-    amountProduct: number,
-    basePrice: number,
-  ) {
-    const existingProduct = productList.find((product) => product.name === name)
+  function addNewProduct(product: Product) {
+    const existingProduct = productList.find(
+      (prod) => prod.name === product.name,
+    )
 
     if (existingProduct) {
       return toast.error('Esse produto já foi adicionado no carrinho')
     } else {
-      const newProduct: Product = {
-        id,
-        img,
-        name,
-        newPrice,
-        basePrice,
-        amountProduct,
-      }
-
       dispatch({
         type: 'ADD_NEW_PRODUCT',
-        payload: { newProduct },
+        payload: { newProduct: product },
       })
 
       toast.success('Produto adicionado no carrinho!')
@@ -88,21 +65,17 @@ export function ProductContextProvider({
     })
   }
 
-  function handleAmountProductInTheCart(
-    amount: number,
-    name: string,
-    newPrice: number,
-  ) {
+  function handleAmountProductInTheCart(id: string, quantity: number) {
     dispatch({
       type: 'HANDLE_AMOUNT_PRODUCT_IN_THE_CART',
-      payload: { amount, name, newPrice },
+      payload: { quantity, id },
     })
   }
 
-  function clearProductList(confirmedOrder: boolean) {
+  function clearProductList() {
     dispatch({
       type: 'CLEAR_PRODUCT_LIST',
-      payload: { confirmedOrder },
+      payload: { confirmedOrder: true },
     })
   }
 
